@@ -48,7 +48,6 @@ public class Cache<K, V> {
             oldest = oldest.newer;
         }
 
-
         if (nodes.containsKey(key)) {
             Node<K, V> oldNode = nodes.get(key);
             oldNode.delink();
@@ -73,6 +72,13 @@ public class Cache<K, V> {
 
     }
 
+    @Override
+    public String toString() {
+        return "Cache{" +
+                "capacity=" + capacity +
+                ", pairs new to old=[" + (newest != null ? newest.newToOld() : "empty") + "]" +
+                '}';
+    }
 
     private static class Node<K, V> {
         private Node<K, V> older;
@@ -85,22 +91,8 @@ public class Cache<K, V> {
             this.value = value;
         }
 
-        @Override
-        public String toString() {
-            return "Node{" +
-                    "left=" + (older != null ? older.key.toString(): "null") +
-                    ", key=" +  key +
-                    ", value=" + value +
-                    ", right=" + (newer != null ? newer.key.toString(): "null") +
-                    '}';
-        }
-
         public String newToOld() {
-            return key + " -> " + Optional.ofNullable(older).map(Node::newToOld).orElse("end");
-        }
-
-        public String oldToNew() {
-            return key + " -> " + Optional.ofNullable(newer).map(Node::oldToNew).orElse("end");
+            return "("+ key + " -> " + value + ")" + ", " + Optional.ofNullable(older).map(Node::newToOld).orElse("Nil");
         }
 
         public void setOlder(Node<K, V> older) {

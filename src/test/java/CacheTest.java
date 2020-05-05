@@ -82,4 +82,16 @@ public class CacheTest {
         cache.remove(1234);
     }
 
+
+    @Test
+    public void printCacheTest() {
+        var cache = new Cache<Integer, String>(3);
+
+        cache.put(1234, "test1");
+        cache.put(1235, "test2");
+        cache.put(1236, "test3");
+
+        assertEquals("Cache{capacity=3, pairs new to old=[(1236 -> test3), (1235 -> test2), (1234 -> test1), Nil]}", cache.toString());
+    }
+
 }

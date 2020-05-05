@@ -1,12 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<testsuite name="CacheTest" tests="6" skipped="0" failures="0" errors="0" timestamp="2020-05-05T00:17:20" hostname="Tristans-MacBook-Pro.local" time="0.031">
+<testsuite name="CacheTest" tests="1" skipped="0" failures="0" errors="0" timestamp="2020-05-05T00:54:31" hostname="Tristans-MacBook-Pro.local" time="0.031">
   <properties/>
-  <testcase name="overWriteTest()" classname="CacheTest" time="0.018"/>
-  <testcase name="removalTest()" classname="CacheTest" time="0.002"/>
-  <testcase name="putGetTest()" classname="CacheTest" time="0.0"/>
-  <testcase name="removalAllTest()" classname="CacheTest" time="0.0"/>
-  <testcase name="evictAtCapacityTest()" classname="CacheTest" time="0.0"/>
-  <testcase name="removeNonPresent()" classname="CacheTest" time="0.001"/>
-  <system-out><![CDATA[]]></system-out>
+  <testcase name="printCacheTest()" classname="CacheTest" time="0.031"/>
+  <system-out><![CDATA[Cache{capacity=3, pairs new to old=[(1236 -> test3), (1235 -> test2), (1234 -> test1), Nil]}
+]]></system-out>
   <system-err><![CDATA[]]></system-err>
 </testsuite>
