@@ -1,0 +1,134 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>Cache.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">cache</a> &gt; <a href="index.source.html" class="el_package">default</a> &gt; <span class="el_source">Cache.java</span></div><h1>Cache.java</h1><pre class="source lang-java linenums">import java.util.HashMap;
+import java.util.Optional;
+
+public class Cache&lt;K, V&gt; {
+    private int capacity;
+<span class="fc" id="L6">    private HashMap&lt;K, Node&lt;K, V&gt;&gt; nodes = new HashMap&lt;&gt;();</span>
+    private Node&lt;K, V&gt; oldest;
+    private Node&lt;K, V&gt; newest;
+
+
+<span class="fc" id="L11">    public Cache(int capacity) {</span>
+<span class="fc" id="L12">        this.capacity = capacity;</span>
+<span class="fc" id="L13">    }</span>
+
+    synchronized public void put(K key, V value) {
+<span class="fc bfc" id="L16" title="All 2 branches covered.">        if (nodes.containsKey(key)) {</span>
+<span class="fc" id="L17">            nodes.get(key).setValue(value);</span>
+        } else {
+
+<span class="fc" id="L20">            Node&lt;K, V&gt; node = new Node&lt;&gt;(key, value);</span>
+
+<span class="fc bfc" id="L22" title="All 2 branches covered.">            if (nodes.size() == 0) {</span>
+<span class="fc" id="L23">                oldest = node;</span>
+<span class="fc" id="L24">                newest = node;</span>
+<span class="fc bfc" id="L25" title="All 2 branches covered.">            } else if (nodes.size() == capacity) {</span>
+<span class="fc" id="L26">                K keyToRemove = popOldest().key;</span>
+<span class="fc" id="L27">                nodes.remove(keyToRemove);</span>
+<span class="fc" id="L28">                addNewest(node);</span>
+<span class="fc" id="L29">            } else {</span>
+<span class="fc" id="L30">                addNewest(node);</span>
+            }
+
+<span class="fc" id="L33">            nodes.put(key, node);</span>
+
+        }
+<span class="fc" id="L36">    }</span>
+
+    synchronized public V get(K key) {
+<span class="fc" id="L39">        return Optional.ofNullable(nodes.get(key)).map(Node::getValue).orElse(null);</span>
+    }
+
+    synchronized public void remove(K key) {
+<span class="fc bfc" id="L43" title="All 4 branches covered.">        if (newest != null &amp;&amp; newest.key.equals(key)) {</span>
+<span class="fc" id="L44">            newest = newest.older;</span>
+        }
+
+<span class="fc bfc" id="L47" title="All 4 branches covered.">        if (oldest != null &amp;&amp; oldest.key.equals(key)) {</span>
+<span class="fc" id="L48">            oldest = oldest.newer;</span>
+        }
+
+
+<span class="fc bfc" id="L52" title="All 2 branches covered.">        if (nodes.containsKey(key)) {</span>
+<span class="fc" id="L53">            Node&lt;K, V&gt; oldNode = nodes.get(key);</span>
+<span class="fc" id="L54">            oldNode.delink();</span>
+<span class="fc" id="L55">            nodes.remove(key);</span>
+
+        }
+<span class="fc" id="L58">    }</span>
+
+    private Node&lt;K, V&gt; popOldest() {
+<span class="fc" id="L61">        Node&lt;K, V&gt; returnValue = oldest;</span>
+
+<span class="fc" id="L63">        oldest = oldest.newer;</span>
+<span class="fc" id="L64">        oldest.setOlder(null);</span>
+
+<span class="fc" id="L66">        return returnValue;</span>
+    }
+
+    private void addNewest(Node&lt;K, V&gt; newNode) {
+<span class="fc" id="L70">        newNode.setOlder(newest);</span>
+<span class="fc" id="L71">        newest.setNewer(newNode);</span>
+<span class="fc" id="L72">        newest = newNode;</span>
+
+<span class="fc" id="L74">    }</span>
+
+
+    private static class Node&lt;K, V&gt; {
+        private Node&lt;K, V&gt; older;
+        private Node&lt;K, V&gt; newer;
+        private final K key;
+        private V value;
+
+<span class="fc" id="L83">        public Node(K key, V value) {</span>
+<span class="fc" id="L84">            this.key = key;</span>
+<span class="fc" id="L85">            this.value = value;</span>
+<span class="fc" id="L86">        }</span>
+
+        @Override
+        public String toString() {
+<span class="nc" id="L90">            return &quot;Node{&quot; +</span>
+<span class="nc bnc" id="L91" title="All 2 branches missed.">                    &quot;left=&quot; + (older != null ? older.key.toString(): &quot;null&quot;) +</span>
+                    &quot;, key=&quot; +  key +
+                    &quot;, value=&quot; + value +
+<span class="nc bnc" id="L94" title="All 2 branches missed.">                    &quot;, right=&quot; + (newer != null ? newer.key.toString(): &quot;null&quot;) +</span>
+                    '}';
+        }
+
+        public String newToOld() {
+<span class="nc" id="L99">            return key + &quot; -&gt; &quot; + Optional.ofNullable(older).map(Node::newToOld).orElse(&quot;end&quot;);</span>
+        }
+
+        public String oldToNew() {
+<span class="nc" id="L103">            return key + &quot; -&gt; &quot; + Optional.ofNullable(newer).map(Node::oldToNew).orElse(&quot;end&quot;);</span>
+        }
+
+        public void setOlder(Node&lt;K, V&gt; older) {
+<span class="fc" id="L107">            this.older = older;</span>
+<span class="fc" id="L108">        }</span>
+
+        public void setNewer(Node&lt;K, V&gt; newer) {
+<span class="fc" id="L111">            this.newer = newer;</span>
+<span class="fc" id="L112">        }</span>
+
+        public void setValue(V value) {
+<span class="fc" id="L115">            this.value = value;</span>
+<span class="fc" id="L116">        }</span>
+
+        public V getValue() {
+<span class="fc" id="L119">            return value;</span>
+        }
+
+        public void delink() {
+<span class="fc bfc" id="L123" title="All 2 branches covered.">            if (older != null ) {</span>
+<span class="fc" id="L124">                older.setNewer(newer);</span>
+            }
+
+<span class="fc bfc" id="L127" title="All 2 branches covered.">            if (newer != null) {</span>
+<span class="fc" id="L128">                newer.setOlder(older);</span>
+            }
+<span class="fc" id="L130">        }</span>
+
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.5.201910111838</span></div></body></html>
